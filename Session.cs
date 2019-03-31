@@ -18,15 +18,15 @@ namespace SMTP_Server
 
         public string clientDomain; 
         public string reversePath; 
-        public List<string> forwardPath; // forwardPath address
-        public string mailData; // mail text
+        public List<string> forwardPath;
+        public string mailData; 
 
         public Session(int id, TcpClient client)
         {
             sessionID = id;
             this.client = client;
 
-            this.Reset();   
+            Reset();   
         }
 
         public void Reset()
@@ -42,15 +42,11 @@ namespace SMTP_Server
             DisconnectEvent?.Invoke(this, new DisconnectEventArgs(sessionID, client, sessionThread));
         }
 
-        //!NOTE:COMMANDS SHOULD BE PARSED NON-CASE-SENSITIVELY
         public ISMTP_Command ParseCommand(string cmdLine, ref string error, ref string response)
         {
             cmdLine.ToUpper();
             string[] cmds = cmdLine.Split(' ');
-   
-            //a ton of ifs incoming...
-            //what if commands come in batch?
-
+             
             if (string.Compare(cmds[0], "HELO") == 0)
             {
                 if (cmds.Length == 2)
@@ -73,7 +69,7 @@ namespace SMTP_Server
                     return new SMTP_BAD_COMMAND();
                 }
             }
-            else if (string.Compare(cmds[0], "MAIL") == 0 && string.Compare(cmds[1], "FROM") == 0)
+            else if (string.Compare(cmds[0], "MAIL") == 0 && string.Compare(cmds[1], "FROM:") == 0)
             {                
                 if (cmds.Length == 3)
                 {
@@ -84,7 +80,7 @@ namespace SMTP_Server
                     return new SMTP_BAD_COMMAND();
                 }
             }
-            else if (string.Compare(cmds[0], "RCPT") == 0 && string.Compare(cmds[1], "TO") == 0)
+            else if (string.Compare(cmds[0], "RCPT") == 0 && string.Compare(cmds[1], "TO:") == 0)
             {
                 if (cmds.Length == 3)
                 {

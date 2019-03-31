@@ -15,7 +15,8 @@ namespace SMTP_Server
             if (sender[0] == '<' && sender.Last(1)[0] == '>')
             {
                 _Error = false;
-                reversePath = sender;
+                string temp = sender.Substring(1, sender.Length - 2);
+                reversePath = temp;
             }
             else
             {

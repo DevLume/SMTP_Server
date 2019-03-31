@@ -19,6 +19,7 @@ namespace SMTP_Server
         private int sessCount;
         public SessionManager sessMan;
         public volatile bool ServerOff;
+   
 
         public Server()
         {

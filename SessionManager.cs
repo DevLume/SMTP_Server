@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -12,7 +13,7 @@ namespace SMTP_Server
         public List<Session> SessionList;
 
         public SessionManager()
-        {
+        {     
             SessionList = new List<Session>();    
         }
 
@@ -36,7 +37,7 @@ namespace SMTP_Server
 
         public void SendGreeting(NetworkStream stream)
         {
-            SMTP_Message messg = new SMTP_Message((int)States.service_ready, "www.test.smtp.com", "Service ready");
+            SMTP_Message messg = new SMTP_Message((int)States.service_ready, Dns.GetHostName(), "Service ready");
             byte[] msg = Encoding.ASCII.GetBytes(messg.ToString());
             StreamWrite(stream, msg, 0, msg.Length);
         }
@@ -47,6 +48,8 @@ namespace SMTP_Server
             Session s = (Session)session;
             TcpClient tempClient = s.client;
             NetworkStream stream = tempClient.GetStream();
+
+            IMail mail;
 
             bool disconnect = false;
             int i = 0;
@@ -107,22 +110,7 @@ namespace SMTP_Server
                         s.Disconnect();
                     }
                     else
-                    {
-                        /*string lastSyms = data.Last(5);
-                        if (string.Compare(lastSyms, "\r\n.\r\n") == 0)
-                        {
-                            tempSb.Append(data);
-                            s.mailData = tempSb.ToString();
-                            Console.Write(s.mailData);
-                            s.waitingForCommand = true;
-                            SMTP_Message m = new SMTP_Message((int)States.action_ok, "Message accepted for delivery.");
-                            msg = Encoding.ASCII.GetBytes(m.ToString());
-                            StreamWrite(stream, msg, 0, msg.Length);
-                        }
-                        else
-                        {
-                            tempSb.Append(data);
-                        }*/
+                    {                  
                         if (i == 1)
                         {
                             if (data[0] == '.')
@@ -133,10 +121,26 @@ namespace SMTP_Server
                                 SMTP_Message m = new SMTP_Message((int)States.action_ok, "Message accepted for delivery.");
                                 msg = Encoding.ASCII.GetBytes(m.ToString());
                                 StreamWrite(stream, msg, 0, msg.Length);
+
+                                MailTypeResolver mtr = new MailTypeResolver();
+
+                                foreach (string str in s.forwardPath)
+                                {
+                                    try
+                                    {
+                                        mail = mtr.GetMailType(str);
+                                        mail.Send(s.reversePath, str, s.mailData);
+                                    }
+                                    catch (NotImplementedException)
+                                    {
+                                        m = new SMTP_Message((int)States.command_not_implemented, "Can't send to outside domains");
+                                        msg = Encoding.ASCII.GetBytes(m.ToString());
+                                        StreamWrite(stream, msg, 0, msg.Length);
+                                    }
+                                }
                             }
                         }
                         tempSb.Append(data);
-
                     }
                     
                 }

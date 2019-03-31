@@ -1,25 +1,31 @@
-﻿using System;
+﻿using DnsClient;
+using MailKit.Net.Smtp;
+using MimeKit;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-
-//?TODO:
-//?Implement multiple recipients
+using System.Threading.Tasks;
 
 namespace SMTP_Server
 {
     public class Program
-    {
-        //TODO: Create a program flow graph        
+    {            
         public static void Main(string[] args)
         {
-            //Single client server
             Server con = new Server();
 
-            con.StartListening("127.0.0.1", 25);         
+            FileMail.QueueNr = 0;
+
+            IPAddress ipAddr = Dns.GetHostAddresses(Dns.GetHostName())[2];
+
+            Console.WriteLine("Listening at {0} {1}", ipAddr, 9025);
+            con.StartListening(ipAddr.ToString(), 9025);
+            Console.Read();
         }        
     }
 
@@ -40,6 +46,26 @@ namespace SMTP_Server
             Match match = rx.Match(source);
 
             return match.Success;
+        }
+
+        public static bool IsLocalDomain(this string source)
+        {
+            string hostname = Dns.GetHostName();
+            string[] temp = source.Split('@');
+            return (string.Compare(hostname, temp[1]) == 0);
+        }
+
+        public static string BuildOneString(this List<string> source)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (string s in source)
+            {
+                sb.Append(s);
+                sb.Append(";");
+            }
+
+            return sb.ToString();
         }
     }
 }

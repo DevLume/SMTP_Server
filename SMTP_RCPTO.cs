@@ -14,7 +14,8 @@ namespace SMTP_Server
             if (receiver[0] == '<' && receiver.Last(1)[0] == '>')
             {
                 _Error = false;
-                this.receiver = receiver;
+                string temp = receiver.Substring(1, receiver.Length - 2);
+                this.receiver = temp;
             }
             else
             {
@@ -27,6 +28,10 @@ namespace SMTP_Server
             if (s.clientDomain != string.Empty && !_Error && s.reversePath != string.Empty)
             {
                 if (receiver.IsEmail())
+                {
+                    s.forwardPath.Add(receiver);
+                }
+                else if (receiver.IsLocalDomain())
                 {
                     s.forwardPath.Add(receiver);
                 }
