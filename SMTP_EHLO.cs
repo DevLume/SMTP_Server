@@ -17,7 +17,23 @@ namespace SMTP_Server
         {
             s.Reset();
             s.clientDomain = domainName;
-            return new SMTP_Message((int)States.action_ok, domainName, "Hello, dear friend!");
+
+            List<SMTP_Message> msg = new List<SMTP_Message>();
+            msg.Add(new SMTP_Message((int)States.action_ok, "Hello, Dear friend!"));
+            msg.InsertRange(msg.Count, EnableExtensions(s));
+
+            return new SMTP_Message(msg);
+        }
+
+        private List<SMTP_Message> EnableExtensions(Session s)
+        {
+            List<SMTP_Message> temp = new List<SMTP_Message>();
+
+            s.extendedMode = true;
+
+            temp.Add(new SMTP_Message((int)States.action_ok, "STARTTLS"));
+
+            return temp;
         }
     }
 }
