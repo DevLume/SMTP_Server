@@ -15,11 +15,14 @@ namespace SMTP_Server
 
         public bool waitingForCommand = true;
         public bool done = false;
+        public bool extendedMode = false;
 
         public string clientDomain; 
         public string reversePath; 
         public List<string> forwardPath;
         public string mailData; 
+
+
 
         public Session(int id, TcpClient client)
         {
@@ -31,6 +34,10 @@ namespace SMTP_Server
 
         public void Reset()
         {
+            waitingForCommand = true;
+            done = false;
+            extendedMode = false;
+
             clientDomain = string.Empty;
             reversePath = string.Empty;
             forwardPath = new List<string>();

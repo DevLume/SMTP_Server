@@ -21,10 +21,11 @@ namespace SMTP_Server
 
             FileMail.QueueNr = 0;
 
-            IPAddress ipAddr = Dns.GetHostAddresses(Dns.GetHostName())[2];
+            IPAddress ipAddr = Dns.GetHostAddresses(System.Environment.UserDomainName)[2];
 
-            Console.WriteLine("Listening at {0} {1}", ipAddr, 9025);
+            Console.WriteLine("Listening at {0} {1} {2}", ipAddr, 9025, System.Environment.UserDomainName);
             con.StartListening(ipAddr.ToString(), 9025);
+
             Console.Read();
         }        
     }
@@ -50,7 +51,7 @@ namespace SMTP_Server
 
         public static bool IsLocalDomain(this string source)
         {
-            string hostname = Dns.GetHostName();
+            string hostname = System.Environment.UserDomainName;
             string[] temp = source.Split('@');
             return (string.Compare(hostname, temp[1]) == 0);
         }
